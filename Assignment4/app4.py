@@ -3,14 +3,14 @@ import numpy as np
 import tensorflow as tf
 import pickle
 
-st.set_page_config(page_title="Stock Price Predictor")
+st.set_page_config(page_title="Stock Predictor")
 
-st.title("📈 Stock Price Prediction")
+st.title("📈 AI Stock Price Predictor")
 
 st.write("Enter last 30 days closing prices:")
 
 # -------------------------------
-# LOAD MODEL
+# LOAD MODEL + SCALER
 # -------------------------------
 @st.cache_resource
 def load_all():
@@ -21,12 +21,12 @@ def load_all():
 model, scaler = load_all()
 
 # -------------------------------
-# USER INPUT (30 DAYS)
+# USER INPUT
 # -------------------------------
 prices = []
 
 for i in range(30):
-    val = st.number_input(f"Day {i+1} Price", value=100.0)
+    val = st.number_input(f"Day {i+1}", value=100.0)
     prices.append(val)
 
 # -------------------------------
@@ -36,7 +36,7 @@ if st.button("Predict Next Price"):
     try:
         data = np.array(prices).reshape(-1,1)
 
-        # Scale input
+        # Scale correctly
         data_scaled = scaler.transform(data)
 
         # Reshape for model
@@ -45,10 +45,10 @@ if st.button("Predict Next Price"):
         # Predict
         pred = model.predict(data_scaled)
 
-        # Inverse scale
+        # Convert back
         pred_price = scaler.inverse_transform(pred)
 
-        st.success(f"📊 Predicted Next Price: {pred_price[0][0]:.2f}")
+        st.success(f"📊 Predicted Price: {pred_price[0][0]:.2f}")
 
     except Exception as e:
         st.error(f"Error: {e}")
