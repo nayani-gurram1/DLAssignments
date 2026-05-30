@@ -2,7 +2,6 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import pickle
-import tensorflow as tf
 
 # -------------------------------
 # PAGE CONFIG
@@ -17,7 +16,7 @@ st.write("Predict whether a customer will churn or not.")
 # -------------------------------
 @st.cache_resource
 def load_all():
-    model = tf.keras.models.load_model("churn_model.keras")
+    model = pickle.load(open("model.pkl", "rb"))   # <-- changed
     scaler = pickle.load(open("scaler.pkl", "rb"))
     columns = pickle.load(open("columns.pkl", "rb"))
     return model, scaler, columns
@@ -78,14 +77,19 @@ def preprocess():
 if st.button("Predict Churn"):
     try:
         input_data = preprocess()
-        prediction = model.predict(input_data)[0][0]
+
+        # sklearn prediction
+        prediction = model.predict(input_data)[0]
+
+        # probability (if available)
+        prob = model.predict_proba(input_data)[0][1]
 
         st.subheader("Result")
 
-        if prediction > 0.5:
-            st.error(f"⚠️ High Risk of Churn ({prediction:.2f})")
+        if prediction == 1:
+            st.error(f"⚠️ High Risk of Churn ({prob:.2f})")
         else:
-            st.success(f"✅ Customer Likely to Stay ({prediction:.2f})")
+            st.success(f"✅ Customer Likely to Stay ({prob:.2f})")
 
     except Exception as e:
         st.error(f"Error: {e}")
